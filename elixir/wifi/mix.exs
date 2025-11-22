@@ -26,7 +26,7 @@ defmodule Wifi.MixProject do
   defp deps do
     [
       {:exatomvm, git: "https://github.com/AtomVM/ExAtomVM/"},
-      {:atomvm_lib, git: "https://github.com/atomvm/atomvm_lib.git", branch: "master"}
+      {:atomvm_httpd, git: "https://github.com/harmon25/atomvm_httpd"}
 
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}

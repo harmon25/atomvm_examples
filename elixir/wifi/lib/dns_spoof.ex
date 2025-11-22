@@ -4,10 +4,11 @@ defmodule DNSSpoof do
   this is used to create a captive portal to enter wifi credentials
   """
 
-  @ip {192, 168, 4, 1}  # IP of the ESP32 in AP mode
+  # IP of the ESP32 in AP mode
+  @ip {192, 168, 4, 1}
 
   def start(port \\ 53) do
-    {:ok, socket} = :gen_udp.open(port, [:binary, active: true, ip: {0,0,0,0}])
+    {:ok, socket} = :gen_udp.open(port, [:binary, active: true, ip: {0, 0, 0, 0}])
     loop(socket)
   end
 
@@ -27,8 +28,10 @@ defmodule DNSSpoof do
 
     # Very naive implementation: only responds with an A record with our IP
     question = rest
-    answer = <<0xC0, 0x0C, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x3C, 0x00, 0x04>> <>
-             :erlang.list_to_binary(Tuple.to_list(ip))
+
+    answer =
+      <<0xC0, 0x0C, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x3C, 0x00, 0x04>> <>
+        :erlang.list_to_binary(Tuple.to_list(ip))
 
     id <> <<0x81, 0x80>> <> qdcount <> <<0x00, 0x01>> <> nscount <> arcount <> question <> answer
   end

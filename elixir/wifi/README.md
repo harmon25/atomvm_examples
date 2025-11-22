@@ -9,4 +9,6 @@ Launches an access point that can be connected to in order to set wifi credentia
 ```sh
 
 mix atomvm.esp32.flash --port /dev/tty.usbmodem2101
+
+mix atomvm.esp32.flash --port /dev/tty.usbserial-014863E5
 ```
