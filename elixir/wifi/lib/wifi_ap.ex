@@ -6,19 +6,37 @@ defmodule WifiAp do
   """
 
   def start() do
+    # WifiConfig.reset()
+
     # if we have persisted ssid + psk connect as sta, do not run ap.
     nvs_config = WifiConfig.get()
 
-    IO.inspect(nvs_config)
+    if nvs_config[:ssid] !== "" and nvs_config[:psk] !== "" do
+      create_sta_config(nvs_config)
+      |> start_sta()
+    else
+      create_ap_config()
+      |> start_ap()
+    end
+  end
 
-    net_config =
-      if nvs_config[:ssid] !== "" and nvs_config[:psk] !== "" do
-        create_sta_config(nvs_config)
-      else
-        create_ap_config()
-      end
+  defp start_sta(config) do
+    case :network.wait_for_sta(config[:sta], 10000) do
+      {:ok, {ip, _mask, gateway}} ->
+        IO.inspect("Got #{inspect(ip)} from #{inspect(gateway)}")
 
-    case :network.start(net_config) do
+        Process.sleep(:infinity)
+
+      {:error, reason} ->
+        IO.inspect("failed to connect for #{reason}, clearing config + rebooting")
+        Process.sleep(5000)
+        WifiConfig.reset()
+        :esp.restart()
+    end
+  end
+
+  defp start_ap(config) do
+    case :network.start(config) do
       {:ok, _pid} ->
         IO.puts("Network started!")
         Process.sleep(:infinity)
@@ -34,11 +52,12 @@ defmodule WifiAp do
         connected: fn ->
           IO.inspect("Connected to #{nvs_config[:ssid]}")
         end,
-        got_up: fn {ip, _netmask, gateway} ->
+        got_ip: fn {ip, _netmask, gateway} ->
           IO.inspect("Got #{inspect(ip)} from #{inspect(gateway)}")
         end,
         disconnected: fn ->
-          IO.inspect("Disconnected from  #{nvs_config[:ssid]}")
+          IO.inspect("Disconnected from #{nvs_config[:ssid]}")
+          # must be bad creds? clear and reboot
         end
       ] ++
         nvs_config
